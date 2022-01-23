@@ -48,7 +48,7 @@ public class BinarySearchTree<T extends Comparable<T>> implements SearchTree<T> 
 
         while (current != null) {
             previous = current;
-            if (element.compareTo(current.data) <= 0) {
+            if (element.compareTo(current.data) < 0) {
                 current = current.left;
             } else {
                 current = current.right;
@@ -56,7 +56,7 @@ public class BinarySearchTree<T extends Comparable<T>> implements SearchTree<T> 
         }
 
         // add child to parent
-        if (element.compareTo(previous.data) <= 0) {
+        if (element.compareTo(previous.data) < 0) {
             previous.left = newNode;
         } else {
             previous.right = newNode;
@@ -84,7 +84,7 @@ public class BinarySearchTree<T extends Comparable<T>> implements SearchTree<T> 
 
         // Is element found
         if (current == null)
-            return deleted;
+            return null;
 
         deleted = current.data;
         // delete current
@@ -132,9 +132,71 @@ public class BinarySearchTree<T extends Comparable<T>> implements SearchTree<T> 
     public int removeAll(T element) {
         int count = 0;
 
-        // remove until no node is removed
-        while (this.remove(element) != null)
+        // tree empty
+        if (this.isEmpty())
+            return count;
+
+        Node previous = null;
+        Node current = this.root;
+
+        // find node to delete
+        while (current != null && !current.data.equals(element)) {
+            previous = current;
+            if (element.compareTo(current.data) < 0)
+                current = current.left;
+            else
+                current = current.right;
+        }
+
+        // Is element found
+        if (current == null)
+            return count;
+
+        Node mark = current;
+
+        while (mark.data.equals(element)) {
+            // delete marked Node
+            current = mark;
+
+            // delete current
+            while (!current.isLeaf()) {
+                Node tempNode = current;
+                previous = current;
+
+                if (current.right != null) {
+                    current = current.right;
+                    // Find successor
+                    while (current.left != null) {
+                        previous = current;
+                        current = current.left;
+                    }
+                } else if (current.left != null) {
+                    current = current.left;
+                    // Find predecessor
+                    while (current.right != null) {
+                        previous = current;
+                        current = current.right;
+                    }
+                }
+                tempNode.data = current.data;
+            }
+
+            //decrement size
+            this.size--;
             count++;
+
+            // deleting root node
+            if (previous == null) {
+                this.root = null;
+                return count;
+            }
+
+            // Deleting leaf node
+            if (current == previous.left)
+                previous.left = null;
+            else
+                previous.right = null;
+        }
 
         return count;
     }
